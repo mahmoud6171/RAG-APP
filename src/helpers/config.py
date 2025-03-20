@@ -1,13 +1,18 @@
-from pydantic_settings import BaseSettings,SettingsConfigDict
-class Setting(BaseSettings):
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
+from typing import List
+class Settings(BaseSettings):
+
+    APP_NAME: str = Field(..., description="The name of the application",)
+    APP_VERSION: str = Field(..., description="The version of the application")
+    OPENAI_KEY: str = Field(..., description="OpenAI API Key")
+    FILE_ALLOWED_TYPES: List[str] = Field(..., description="List of allowed file types")
+    FILE_MAX_SIZE: int = Field(..., description="File size in bytes", )  
+    FILE_DEFAULT_CHUNK_SIZE: int = Field(..., description="Default chunk size for file upload", )
+   
     
-    APP_Name : str
-    APP_Version : str 
-    OPENAI_KEY : str
+    model_config = SettingsConfigDict(env_file=".env")
     
-    
-    class config:
-        env_file = ".env"
-        
-def get_setting():
-    return Setting()
+
+def get_settings(): 
+    return Settings()

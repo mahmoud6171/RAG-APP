@@ -21,6 +21,10 @@
     ```sh
     $ python --version
     ```
+    7. Install the required packages from the `requirements.txt` file:
+        ```sh
+        $ pip install -r requirements.txt
+        ```
 
 You should now have Python 3.8 or later installed in a conda environment.
 
@@ -34,3 +38,8 @@ export PS1="\[\033[01;32m\]\u@\h:\w\n\[\033[00m\]\$"
 $ cp .env.example .env
 ```
 Set your enviremonts variables in the `.env` file like `OPENAI_API_KEY` value.
+
+### Run the server
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 5000
+```
