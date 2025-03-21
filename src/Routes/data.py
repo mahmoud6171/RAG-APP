@@ -17,7 +17,6 @@ data_router = APIRouter(
 @data_router.post("/upload/{project_id}")
 async def upload_file(project_id:str, file : UploadFile, app_settings= Depends(get_settings)):
     
-     
     data_controller = DataController()
     vaild, result_signal = data_controller.validate_uplaod_data(uploaded_file= file)
     
@@ -29,7 +28,7 @@ async def upload_file(project_id:str, file : UploadFile, app_settings= Depends(g
         
     project_dir = ProjectController().get_project_path(project_id)
     
-    file_path = data_controller.generate_unique_file_name(
+    file_path, file_id = data_controller.generate_unique_file_path(
         orig_file_name=file.filename,
         project_id=project_dir)
    
@@ -46,7 +45,7 @@ async def upload_file(project_id:str, file : UploadFile, app_settings= Depends(g
     
     return JSONResponse(
         content={"message": ResponseSignal.FILE_UPLOAD_SUCCESS.value,
-                 "file_size": file.size,
                  "file_name": file.filename,
-                 "file_path": file_path}
+                 "file_id": file_id,
+                 }
         )
