@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     FILE_ALLOWED_TYPES: List[str] = Field(..., description="List of allowed file types")
     FILE_MAX_SIZE: int = Field(..., description="File size in bytes", )  
     FILE_DEFAULT_CHUNK_SIZE: int = Field(..., description="Default chunk size for file upload", )
+    
+    MONGODB_URL :str
+    MONGODB_DATABASE :str
    
     
     model_config = SettingsConfigDict(env_file=".env")
