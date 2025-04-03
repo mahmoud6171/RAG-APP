@@ -16,9 +16,13 @@ class ProcessController(BaseController):
         return os.path.splitext(project_id)[-1]
     
     def get_fileLoader(self, file_id: str):
-        
+             
         ext = self.get_exn(file_id)
         file_path = os.path.join( self.project_path, file_id)
+        
+        if not  os.path.exists(file_path):
+            return None
+        
         if ext == ProcessEnum.PDF.value:
             return PyMuPDFLoader(file_path)
         if ext == ProcessEnum.TXT.value:
