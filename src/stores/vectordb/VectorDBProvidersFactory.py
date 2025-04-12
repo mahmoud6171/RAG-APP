@@ -1,4 +1,5 @@
-from .providers import QdrantDb
+from .providers import QdrantDB
+from .VectorDBEnum import VectorDBEnum
 from controller.BaseController import BaseController
 
 
@@ -12,11 +13,11 @@ class VectorDBProviderFactory:
     
     def create_provider(self,provider_type: str):
         """Creates a vector database provider based on the provider type."""
-        if provider_type == self.config.QDRANTDB.value:
+        if provider_type == VectorDBEnum.QDRANT.value:
             db_path = self.basecontroller.get_database_path(self.config.VECTOR_DB_PATH)
-            return QdrantDb(
+            return QdrantDB(
                 db_path=db_path,
-                distance_method=self.config.distance_method,
+                distance_method=self.config.VECTOR_DB_DISTANCE_METRIC,
                 
             )
             

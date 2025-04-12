@@ -17,9 +17,9 @@ class QdrantDB(VectorDBInterface):
         self.distance_method = None
         self.db_path = db_path
         
-        if self.distance_method == DistanceMethodEnum.COSINE.value:
+        if distance_method == DistanceMethodEnum.COSINE.value:
             self.distance_method = models.Distance.COSINE
-        elif self.distance_method == DistanceMethodEnum.DOT.value:
+        elif distance_method == DistanceMethodEnum.DOT.value:
             self.distance_method = models.Distance.DOT
         
         self.logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class QdrantDB(VectorDBInterface):
         return self.client.get_collection(collection_name)
     
     def delete_collection(self, collection_name: str) :
-         if self.client.is_collection_exists(collection_name):
+         if self.client.collection_exists(collection_name):
            return self.client.delete_collection(collection_name)
         
     def create_collection(self, collection_name: str,
@@ -59,7 +59,7 @@ class QdrantDB(VectorDBInterface):
         if do_reset:
             _ = self.delete_collection(collection_name)
 
-        if not self.client.is_collection_exists(collection_name):
+        if not self.is_collection_exists(collection_name):
             self.client.create_collection(
                 collection_name=collection_name,
                 vectors_config=models.VectorParams(
@@ -83,10 +83,15 @@ class QdrantDB(VectorDBInterface):
         try:
             self.client.upload_records(
                 collection_name=collection_name,
-                records=[{
-                    "vector": embedding_text,
-                    "payload": {"metadata": metadata, "text": text},
-                }],
+                records=[
+                    models.Record(
+                        id=[record_id],
+                        vector=embedding_text,
+                        payload={
+                            "text": text, "metadata": metadata
+                        }
+                    )
+                ]
             )
         except Exception as e:
             self.logger.error(f"Error inserting record: {e}")
@@ -100,7 +105,7 @@ class QdrantDB(VectorDBInterface):
         if metadatas is None:
             metadatas = [None] * len(texts)
         if record_ids is None:
-            record_ids = [None] * len(texts)
+            record_ids = list(0,len(texts))
             
         for i in range(0, len(texts), batch_size):
             end_batch = i+batch_size
@@ -108,16 +113,22 @@ class QdrantDB(VectorDBInterface):
             batch_texts = texts[i:end_batch]
             batch_metadatas = metadatas[i:end_batch]
             batch_embeddings = embedding_texts[i:end_batch]
-            
+            batch_record_ids = record_ids[i:end_batch]
             
             try:
                 _ = self.client.upload_records(
                     collection_name=collection_name,
-                    records=[{
-                        "vector": vector,
-                        "payload": {"metadata": metadata, "text": text},
-                    } for text,vector, metadata in zip(batch_texts,batch_embeddings, batch_metadatas)],
-                )
+                    records=  [
+                    models.Record(
+                        id=batch_record_ids[x],
+                        vector=batch_embeddings[x],
+                        payload={
+                            "text": batch_texts[x], "metadata": batch_metadatas[x]
+                        }
+                    )
+
+                 for x in range(len(batch_texts))
+            ])
             except Exception as e:
                 self.logger.error(f"Error inserting batch: {e}")
                 return False

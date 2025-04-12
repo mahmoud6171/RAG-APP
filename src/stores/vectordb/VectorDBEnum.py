@@ -13,6 +13,6 @@ class DistanceMethodEnum(Enum):
     """
     Enum class for distance methods.
     """
-    COSINE = "cosine"
-    DOT = "dot"
+    COSINE = "Cosine"
+    DOT = "Dot"
 
