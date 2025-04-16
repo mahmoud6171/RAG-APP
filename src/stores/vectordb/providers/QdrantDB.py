@@ -2,6 +2,7 @@ from typing import Dict, List
 from ..VectorDBInterface import VectorDBInterface
 from qdrant_client import QdrantClient,models
 from ..VectorDBEnum import VectorDBEnum, DistanceMethodEnum
+from models.db_schemes import RetrivedDocument
 import logging
 
 class QdrantDB(VectorDBInterface):
@@ -138,7 +139,7 @@ class QdrantDB(VectorDBInterface):
     
     
     def serch_by_vector(self, collection_name: str, vector: List[float], top_k: int = 5) -> List[Dict]:
-        if not self.client.is_collection_exists(collection_name):
+        if not self.is_collection_exists(collection_name):
             self.logger.error(f"Collection {collection_name} does not exist.")
             return []
         
@@ -152,4 +153,10 @@ class QdrantDB(VectorDBInterface):
             self.logger.error(f"Error searching by vector: {e}")
             return []
         
-        return results
+        return [
+                RetrivedDocument(**{
+                    "score":record.score,
+                    "text":record.payload["text"]
+                })
+                for record in results
+                ]

@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     VECTOR_DB_PATH :str =None
     VECTOR_DB_DISTANCE_METRIC :str =None
 
-   
+    DEFAULT_LANGUAGE :str = "en"
     
     model_config = SettingsConfigDict(env_file=".env")
     

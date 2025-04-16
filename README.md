@@ -41,7 +41,7 @@ Set your enviremonts variables in the `.env` file like `OPENAI_API_KEY` value.
 
 ```bash
 $ cd docker
-$  sudo docker compose up -d
+$ sudo docker compose up -d
 ```
 
 ### Run the server

@@ -3,17 +3,23 @@ from models.db_schemes.project import Project
 from models.db_schemes.data_chunk import DataChunk
 from stores.llm.LLMEnums import DocumentTypeEnums
 from typing import List
+import logging
 import os
 import json
+import httpx
 
 
 class NLPController(BaseController):
-    def __init__(self,verctordb_clinet, embedding_client,generation_client):
+    def __init__(self,verctordb_clinet, embedding_client,
+                 generation_client,template_parser):
         super().__init__()
         
         self.verctordb_clinet = verctordb_clinet
         self.embedding_client = embedding_client
         self.generation_client = generation_client
+        self.template_parser = template_parser
+        
+        self.logger = logging.getLogger("uvicorn.error")
         
     def create_collection_name(self, project_id :str):
         return f"collection_{project_id}".strip()
@@ -42,12 +48,17 @@ class NLPController(BaseController):
         texts = [rec.chunk_text for rec in chunks]
         metadatas = [rec.chunk_metadata   for rec in chunks]
         
-        vectors = [
-            self.embedding_client.generate_embedding(text=text , document_type = DocumentTypeEnums.DOCUMENT.value)
-            for text in texts
-        ]
-        
-       
+        try:
+            vectors = [
+                self.embedding_client.generate_embedding(
+                    text=text, document_type=DocumentTypeEnums.DOCUMENT.value
+                )
+                for text in texts
+            ]
+        except httpx.ConnectError as e:
+            # Log the error and return a meaningful response
+            self.logger.error(f"Failed to connect to embedding service: {e}")
+            return {"error": "Failed to connect to embedding service"}
         
         #step no.3 : create collection if not exict
         _ = self.verctordb_clinet.create_collection(collection_name = collection_name,
@@ -68,17 +79,23 @@ class NLPController(BaseController):
         collection_name = self.create_collection_name(project_id=project.project_id)
 
         # step2: get text embedding vector
-        vector = self.embedding_client.embed_text(text=text, 
-                                                 document_type=DocumentTypeEnums.QUERY.value)
+        try:
+            vector = self.embedding_client.generate_embedding(
+                text=text, document_type=DocumentTypeEnums.QUERY.value
+            )
+        except httpx.ConnectError as e:
+            # Log the error and return a meaningful response
+            self.logger.error(f"Failed to connect to embedding service: {e}")
+            return {"error": "Failed to connect to embedding service"}
 
         if not vector or len(vector) == 0:
             return False
 
         # step3: do semantic search
-        results = self.vectordb_client.search_by_vector(
+        results = self.verctordb_clinet.serch_by_vector(
             collection_name=collection_name,
             vector=vector,
-            limit=limit
+            top_k=limit
         )
 
         if not results:
@@ -115,7 +132,7 @@ class NLPController(BaseController):
 
         # step3: Construct Generation Client Prompts
         chat_history = [
-            self.generation_client.construct_prompt(
+            self.generation_client.constract_prompt(
                 prompt=system_prompt,
                 role=self.generation_client.enums.SYSTEM.value,
             )
@@ -124,7 +141,7 @@ class NLPController(BaseController):
         full_prompt = "\n\n".join([ documents_prompts,  footer_prompt])
 
         # step4: Retrieve the Answer
-        answer = self.generation_client.generate_text(
+        answer = self.generation_client.generate_response(
             prompt=full_prompt,
             chat_history=chat_history
         )

@@ -5,7 +5,8 @@ from helpers.config import get_settings
 from contextlib import asynccontextmanager
 from stores.llm import LLMProviderFactory
 from stores.vectordb.VectorDBProvidersFactory import VectorDBProviderFactory
-
+# Ensure the correct path to Template_Parser is used
+from stores.llm.templates.templates_parser import Template_Parser
 
 
 @asynccontextmanager
@@ -26,6 +27,10 @@ async def lifespan(app: FastAPI):
         provider_type = settings.VECTOR_DB_BACKEND
     )
     app.verctordb_clinet.connect()
+    
+    app.template_parser = Template_Parser(
+        language = settings.DEFAULT_LANGUAGE
+    )
     
     
     

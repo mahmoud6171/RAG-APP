@@ -126,7 +126,7 @@ async def process_data(request :Request,project_id: str, process_request: Proces
             
         project_files = await asset_model.get_asset(
             asset_project_id=project.id,
-            asset_type="text/plain"
+            asset_type="application/pdf"
         )
         
         project_file_ids = {file.id:file.asset_name for file in project_files}

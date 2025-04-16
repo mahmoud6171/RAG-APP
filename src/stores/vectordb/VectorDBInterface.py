@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
-
+from models.db_schemes import RetrivedDocument
 
 class VectorDBInterface(ABC):
     """
@@ -102,7 +102,7 @@ class VectorDBInterface(ABC):
         pass
     
     @abstractmethod
-    def serch_by_vector(self, collection_name: str, vector: List[float], top_k: int = 5) -> List[Dict]:
+    def serch_by_vector(self, collection_name: str, vector: List[float], top_k: int = 5) -> List[RetrivedDocument]:
         """
         Search for similar documents based on a vector.
 

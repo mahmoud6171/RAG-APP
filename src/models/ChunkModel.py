@@ -3,6 +3,7 @@ from models.enums.DataBaseEnum import DataBaseEnum
 from .db_schemes.data_chunk import DataChunk
 from bson.objectid import ObjectId
 from pymongo import InsertOne
+from pydantic import BaseModel
 
 class ChunkModel(BaseDataModel):
     def __init__(self, db_client: object):
@@ -64,3 +65,6 @@ class ChunkModel(BaseDataModel):
         }).skip((page_no-1) * page_size).limit(page_size).to_list(length = None)
         
         return [ DataChunk(**rec)for rec in results ]
+    
+    
+    

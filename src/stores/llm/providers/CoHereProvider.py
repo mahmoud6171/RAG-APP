@@ -11,7 +11,7 @@ class CoHereProvider(LLMInterface):
         
         self.api_key = api_key
         self.api_url = api_url
-        
+        self.enums = CoHereEnums
         self.default_max_input_tokens = default_max_input_tokens
         self.default_max_output_tokens = default_max_output_tokens
         self.tempreture = tempreture
